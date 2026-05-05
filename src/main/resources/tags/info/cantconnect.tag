@@ -24,7 +24,7 @@ If the server isn't appearing on your console, try these steps:
 
 **⚠️ Common Issues:**
 
-**"No route found for user"**
+**"NetherLink: No active session found!"**
 → Make sure your phone/tablet running NetherLink and your console are on the **same Wi‑Fi** *(avoid Guest Wi‑Fi if possible)*.
 
 **"Unable to connect to NetherLink relay server"**
