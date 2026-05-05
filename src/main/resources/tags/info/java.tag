@@ -19,7 +19,7 @@ aliases: jv
 4. **Select a server and select Java as the mode**
    Tap on the server you prefer and select **Java**.
 
-5. **Start Java**  
+5. **Start Java**
    Tap **Start Java**. NetherLink will send the configuration to its servers.
 
 6. **Join from your console**
