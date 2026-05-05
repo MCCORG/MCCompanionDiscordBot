@@ -20,7 +20,7 @@ aliases: friend, fd
 5. **Start Friends Mode**
    Tap **Start Friends Mode**. NetherLink will send the configuration to its servers.
 
-6. **Add the bot as a friend on Xbox**
+6. **Add the bot as a friend on the Xbox network**
    Copy the **gamertag** shown in the NetherLink app and add it as a friend on the **Xbox network**.
 
 7. **Join from your console**
