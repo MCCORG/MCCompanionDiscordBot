@@ -25,5 +25,8 @@ aliases: jv
 6. **Join from your console**
    On your console, open **Minecraft → Play → Friends/worlds** and look for a **LAN Game** NetherLink. Tap it to connect.
 
-7. **Stop when you’re done**
+7. **Login to your Microsoft account with a valid Minecraft Java account**
+   When logging in a screen will pop up with a Microsoft link code. You need to log into your Java Minecraft email!
+
+8. **Stop when you’re done**
    When finished, return to NetherLink and tap **Stop** to end the broadcast.
