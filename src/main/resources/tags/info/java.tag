@@ -14,7 +14,7 @@ aliases: jv
    Launch the app on your phone or tablet.
 
 3. **Enter your server details**
-   Enter the **server address** *(IP or domain)* and **port** *(default: **19132**)*, or pick one from your saved/recommended servers.
+   Enter the **server address** *(IP or domain)* and **port** *(default: **25565**)*, or pick one from your saved/recommended servers.
 
 4. **Select a server and select Java as the mode**
    Tap on the server you prefer and select **Java**.
