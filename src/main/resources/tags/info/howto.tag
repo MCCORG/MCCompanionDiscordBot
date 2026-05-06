@@ -14,11 +14,14 @@ aliases: netherlink, ht
 3. **Enter your server details**
    Enter the **server address** *(IP or domain)* and **port** *(default: **19132**)*, or pick one from your saved/recommended servers.
 
-4. **Start broadcasting**
+4. **Select a server and select Xbox/PS4-5 as the mode**
+   Tap on the server you prefer and select **Xbox/PS4-5**.
+
+5. **Start broadcasting**
    Tap **Start** *(Start Broadcasting)*. NetherLink will create a local **LAN game** entry for your console.
 
-5. **Join from your console**
+6. **Join from your console**
    On your console, open **Minecraft → Play → Friends/worlds** and look for a **LAN Game** NetherLink. Tap it to connect.
 
-6. **Stop when you’re done**
+7. **Stop when you’re done**
    When finished, return to NetherLink and tap **Stop** to end the broadcast.
