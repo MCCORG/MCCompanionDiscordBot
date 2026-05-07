@@ -38,7 +38,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.mccompanion.discordbot.MCCBot;
 import net.mccompanion.discordbot.storage.ServerSettings;
 import net.mccompanion.discordbot.util.BotColors;
-
+import net.mccompanion.discordbot.util.ModerationHelper;
 import javax.annotation.Nonnull;
 
 import java.time.Instant;
@@ -79,45 +79,6 @@ public class AutoModHandler extends ListenerAdapter {
         Member member = event.getGuild().getMemberById(userId);
         if (member == null) return;
 
-        Guild guild = event.getGuild();
-        String reason = "Suspected account compromise";
-
-        User user = member.getUser();
-        user.openPrivateChannel().queue((channel) -> {
-            MessageEmbed embed = new EmbedBuilder()
-                .setTitle("You have been automatically kicked from " + guild.getName() + "!")
-                .addField("Reason", reason, false)
-                .addField("Recommended Actions", "Change your Discord password, enable 2FA, and scan your computer for malware. See [Discord's article](https://support.discord.com/hc/en-us/articles/24160905919511-My-Discord-Account-was-Hacked-or-Compromised) for more info.", false)
-                .setTimestamp(Instant.now())
-                .setColor(BotColors.WARNING.getColor())
-                .build();
-
-            channel.sendMessageEmbeds(embed).queue(message -> {
-                // Kick user
-                guild.kick(user).reason(reason).queue();
-            }, throwable -> {
-                // Kick user
-                guild.kick(user).reason(reason).queue();
-            });
-        }, throwable -> {
-            // Kick user
-            guild.kick(member).reason(reason).queue();
-        });
-
-
-        Member selfMember = guild.getSelfMember();
-        int id = MCCBot.storageManager.addLog(selfMember, "kick", user, reason);
-
-        MessageEmbed logEmbed = new EmbedBuilder()
-            .setTitle("Kicked user")
-            .addField("User", user.getAsMention(), false)
-            .addField("Staff member", selfMember.getAsMention(), false)
-            .addField("Reason", reason, false)
-            .setFooter("ID: " + id)
-            .setTimestamp(Instant.now())
-            .setColor(BotColors.WARNING.getColor())
-            .build();
-
-        ServerSettings.getLogChannel(guild).sendMessageEmbeds(logEmbed).queue();
+        ModerationHelper.quarantineMember(member, event.getGuild(), "Suspected account compromise (Automod detection)", true, null, null, true);
     }
 }

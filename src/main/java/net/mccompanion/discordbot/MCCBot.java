@@ -215,6 +215,9 @@ public class MCCBot {
                             new DeleteHandler(),
                             new AutoModHandler(),
                             new StartListener(),
+                            new HoneyPotHandler(),
+                            new QuarantineHandler(),
+                            new SpamHandler(),
                             client.build(),
                             tagClient.build())
                     .build();

@@ -23,12 +23,13 @@
  * @link https://github.com/GeyserMC/GeyserDiscordBot
  */
 
-package net.mccompanion.discordbot.tags;
+package net.mccompanion.discordbot.context_menus;
 
 import com.jagrosh.jdautilities.command.CommandListener;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.mccompanion.discordbot.util.BotColors;
+
 
 public class TagsListener implements CommandListener {
 
