@@ -204,16 +204,15 @@ public class NetherLinkBot {
 
         generalThreadPool.scheduleAtFixedRate(() -> {
 
-            JSONObject usMetrics = RestClient.get("https://usbackend.netherlink.net/api/metrics").asJSONObject();
             JSONObject euMetrics = RestClient.get("https://eubackend.netherlink.net/api/metrics").asJSONObject();
 
-            int totalServers = usMetrics.getInt("totalServers") + euMetrics.getInt("totalServers");
-            int totalPlayers = usMetrics.getInt("totalCount") + euMetrics.getInt("totalCount");
+            int totalServers = euMetrics.getInt("totalServers");
+            int totalPlayers = euMetrics.getInt("totalCount");
 
             jda.getPresence().setActivity(
                     Activity.watching(
-                            BotHelpers.coolFormat(totalServers) + " servers, " +
-                                    BotHelpers.coolFormat(totalPlayers) + " players"
+                            BotHelpers.coolFormat(totalServers) + " servers joined, " +
+                                    BotHelpers.coolFormat(totalPlayers) + " connections made"
                     )
             );
         }, 5, 60 * 5, TimeUnit.SECONDS);
