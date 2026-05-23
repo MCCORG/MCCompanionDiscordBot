@@ -106,7 +106,7 @@ public class ModerationHelper {
                         }
                     }, throwable -> {
                         if (deleteReferenceMessage) {
-                            referenceMessage.delete().queue(v -> {}, throwable -> {});
+                            referenceMessage.delete().queue(v -> {}, throwable2 -> {});
                         }
                     });
                 }
