@@ -28,7 +28,7 @@ package net.netherlink.discordbot.storage;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.internal.utils.UnlockHook;
 import net.dv8tion.jda.internal.utils.cache.SnowflakeCacheViewImpl;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 
 public class LevelInfo {
     private final long userId;
@@ -45,14 +45,14 @@ public class LevelInfo {
 
     public User getUser() {
         // Get the user from the cache
-        User user = NetherLinkBot.getJDA().getUserById(userId);
+        User user = MCCompanionBot.getJDA().getUserById(userId);
 
         // Get the user from the API since it wasn't in the cache
         if (user == null) {
-            user = NetherLinkBot.getJDA().retrieveUserById(userId).complete();
+            user = MCCompanionBot.getJDA().retrieveUserById(userId).complete();
 
             // Add the user to the user cache since JDA doesn't do that
-            SnowflakeCacheViewImpl<User> usersView = (SnowflakeCacheViewImpl<User>) NetherLinkBot.getJDA().getUserCache();
+            SnowflakeCacheViewImpl<User> usersView = (SnowflakeCacheViewImpl<User>) MCCompanionBot.getJDA().getUserCache();
             try (UnlockHook hook = usersView.writeLock())
             {
                 usersView.getMap().put(user.getIdLong(), user);

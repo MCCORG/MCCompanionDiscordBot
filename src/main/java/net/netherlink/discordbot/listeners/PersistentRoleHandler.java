@@ -28,7 +28,7 @@ package net.netherlink.discordbot.listeners;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -36,7 +36,7 @@ import java.util.List;
 public class PersistentRoleHandler extends ListenerAdapter {
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        List<Role> roles = NetherLinkBot.storageManager.getPersistentRoles(event.getMember());
+        List<Role> roles = MCCompanionBot.storageManager.getPersistentRoles(event.getMember());
 
         for (Role role : roles) {
             event.getGuild().addRoleToMember(event.getMember(), role).queue();

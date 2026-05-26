@@ -46,7 +46,7 @@ import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.TimeFormat;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 import net.netherlink.discordbot.storage.ServerSettings;
 import net.netherlink.discordbot.util.BotColors;
 import net.netherlink.discordbot.util.BotHelpers;
@@ -151,7 +151,7 @@ public class LogHandler extends ListenerAdapter {
         }
 
         // Log the change
-        int id = NetherLinkBot.storageManager.addLog(event.getGuild().getMember(staffUser), action, targetUser, reason);
+        int id = MCCompanionBot.storageManager.addLog(event.getGuild().getMember(staffUser), action, targetUser, reason);
 
         // Send the embed as a reply and to the log
         try {

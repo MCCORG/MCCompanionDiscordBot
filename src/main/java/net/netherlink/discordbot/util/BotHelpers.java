@@ -30,7 +30,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 
 import javax.annotation.Nullable;
 import java.io.BufferedInputStream;
@@ -109,12 +109,12 @@ public class BotHelpers {
                 // Check for a user tag (example#1234)
                 Matcher m = User.USER_TAG.matcher(userTag);
                 if (m.matches()) {
-                    return NetherLinkBot.getJDA().getUserByTag(m.group(1), m.group(2));
+                    return MCCompanionBot.getJDA().getUserByTag(m.group(1), m.group(2));
                 }
             }
 
             // Try to get the member by ID
-            return NetherLinkBot.getJDA().retrieveUserById(userTag).complete();
+            return MCCompanionBot.getJDA().retrieveUserById(userTag).complete();
         } catch (NumberFormatException | ErrorResponseException ignored) {
             return null;
         }
@@ -340,7 +340,7 @@ public class BotHelpers {
      * @return If the moderator (and bot) can target the member
      */
     public static boolean canTarget(Member moderator, Member member) {
-        Member botMember = moderator.getGuild().getMember(NetherLinkBot.getJDA().getSelfUser());
+        Member botMember = moderator.getGuild().getMember(MCCompanionBot.getJDA().getSelfUser());
         return moderator.canInteract(member) && botMember.canInteract(member) && !member.equals(botMember);
     }
 }

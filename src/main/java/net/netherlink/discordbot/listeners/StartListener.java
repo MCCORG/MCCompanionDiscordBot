@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 import net.netherlink.discordbot.util.BotColors;
 import net.netherlink.discordbot.util.FeaturedServers;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +43,7 @@ public class StartListener extends ListenerAdapter {
             return;
         }
 
-        ScheduledExecutorService executor = NetherLinkBot.getGeneralThreadPool();
+        ScheduledExecutorService executor = MCCompanionBot.getGeneralThreadPool();
         if (executor == null) {
             System.err.println("General thread pool is null!");
             return;

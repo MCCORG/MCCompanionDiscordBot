@@ -32,7 +32,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 import net.netherlink.discordbot.util.PropertiesManager;
 
 import java.sql.Connection;
@@ -78,7 +78,7 @@ public class MySQLStorageManager extends AbstractStorageManager {
         try {
             setupStorage();
         } catch (Exception e) {
-            NetherLinkBot.LOGGER.error("Failed to reconnect to MySQL database", e);
+            MCCompanionBot.LOGGER.error("Failed to reconnect to MySQL database", e);
         }
     }
 

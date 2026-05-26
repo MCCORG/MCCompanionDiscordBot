@@ -30,7 +30,7 @@ import com.google.common.cache.CacheBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 import net.netherlink.discordbot.storage.LevelInfo;
 import net.netherlink.discordbot.storage.ServerSettings;
 import net.netherlink.discordbot.util.BotColors;
@@ -78,7 +78,7 @@ public class LevelHandler extends ListenerAdapter {
         int xp = 15 + RANDOM.nextInt(11);
 
         // Get the level
-        LevelInfo levelInfo = NetherLinkBot.storageManager.getLevel(event.getMember());
+        LevelInfo levelInfo = MCCompanionBot.storageManager.getLevel(event.getMember());
 
         // Increase the xp
         levelInfo.setXp(levelInfo.getXp() + xp);
@@ -101,6 +101,6 @@ public class LevelHandler extends ListenerAdapter {
         }
 
         // Update the level
-        NetherLinkBot.storageManager.setLevel(event.getMember(), levelInfo);
+        MCCompanionBot.storageManager.setLevel(event.getMember(), levelInfo);
     }
 }

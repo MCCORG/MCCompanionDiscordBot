@@ -35,7 +35,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.netherlink.discordbot.NetherLinkBot;
+import net.netherlink.discordbot.MCCompanionBot;
 import net.netherlink.discordbot.listeners.SwearHandler;
 import net.netherlink.discordbot.storage.ServerSettings;
 import net.netherlink.discordbot.util.BotColors;
@@ -107,7 +107,7 @@ public class RenameCommand extends SlashCommand {
         member.modifyNickname(newNick).queue();
 
         // Log the change
-        int id = NetherLinkBot.storageManager.addLog(member, "rename", member.getUser(), "");
+        int id = MCCompanionBot.storageManager.addLog(member, "rename", member.getUser(), "");
 
         MessageEmbed renameEmbed = new EmbedBuilder()
                 .setTitle("Renamed user")
