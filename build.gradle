@@ -85,14 +85,14 @@ jar {
     manifest {
         attributes (
             'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
-            'Main-Class': 'net.netherlink.discordbot.MCCompanionBot'
+            'Main-Class': 'net.netherlink.discordbot.NetherLinkBot'
         )
     }
 }
 
 // Allow running with `./gradlew run` task
 application {
-    mainClass = 'net.netherlink.discordbot.MCCompanionBot'
+    mainClass = 'net.netherlink.discordbot.NetherLinkBot'
 }
 
 test {

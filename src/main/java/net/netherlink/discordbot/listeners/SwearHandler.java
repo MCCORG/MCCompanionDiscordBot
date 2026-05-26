@@ -37,7 +37,7 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.netherlink.discordbot.MCCompanionBot;
+import net.netherlink.discordbot.NetherLinkBot;
 import net.netherlink.discordbot.storage.ServerSettings;
 import net.netherlink.discordbot.util.BotColors;
 import net.netherlink.discordbot.util.BotHelpers;
@@ -94,14 +94,14 @@ public class SwearHandler extends ListenerAdapter {
                 }
             }
         } catch (IOException | URISyntaxException e) {
-            MCCompanionBot.LOGGER.error("Failed to load filters", e);
+            NetherLinkBot.LOGGER.error("Failed to load filters", e);
         }
 
-        MCCompanionBot.LOGGER.info("Loaded " + filterPatterns.size() + " filter patterns from " + fileCount + " files");
+        NetherLinkBot.LOGGER.info("Loaded " + filterPatterns.size() + " filter patterns from " + fileCount + " files");
 
         nicknames = new String(BotHelpers.bytesFromResource("nicknames.wlist"), StandardCharsets.UTF_8).trim().split("\n");
 
-        MCCompanionBot.LOGGER.info("Loaded " + nicknames.length + " nicknames");
+        NetherLinkBot.LOGGER.info("Loaded " + nicknames.length + " nicknames");
     }
 
     @Nullable
@@ -188,7 +188,7 @@ public class SwearHandler extends ListenerAdapter {
             if (!thread.isPublic()) return;
         }
 
-        String disableFilter = MCCompanionBot.storageManager.getServerPreference(message.getGuild().getIdLong(), "disable-filter");
+        String disableFilter = NetherLinkBot.storageManager.getServerPreference(message.getGuild().getIdLong(), "disable-filter");
         if (disableFilter != null && !disableFilter.isEmpty()) {
             return;
         }
@@ -217,7 +217,7 @@ public class SwearHandler extends ListenerAdapter {
 
                 // Remove the message from filteredMessages after 5s
                 // this should be enough time for the rest of the events to fire
-                MCCompanionBot.getGeneralThreadPool().schedule(() -> {
+                NetherLinkBot.getGeneralThreadPool().schedule(() -> {
                     filteredMessages.remove(message.getIdLong());
                 }, 5, TimeUnit.SECONDS);
             });

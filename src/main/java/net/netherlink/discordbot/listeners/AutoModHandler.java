@@ -35,7 +35,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.automod.AutoModTriggerType;
 import net.dv8tion.jda.api.events.automod.AutoModExecutionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.netherlink.discordbot.MCCompanionBot;
+import net.netherlink.discordbot.NetherLinkBot;
 import net.netherlink.discordbot.storage.ServerSettings;
 import net.netherlink.discordbot.util.BotColors;
 
@@ -106,7 +106,7 @@ public class AutoModHandler extends ListenerAdapter {
 
 
         Member selfMember = guild.getSelfMember();
-        int id = MCCompanionBot.storageManager.addLog(selfMember, "kick", user, reason);
+        int id = NetherLinkBot.storageManager.addLog(selfMember, "kick", user, reason);
 
         MessageEmbed logEmbed = new EmbedBuilder()
             .setTitle("Kicked user")

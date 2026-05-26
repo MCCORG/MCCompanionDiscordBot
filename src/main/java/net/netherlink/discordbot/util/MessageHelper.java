@@ -30,7 +30,7 @@ import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.netherlink.discordbot.MCCompanionBot;
+import net.netherlink.discordbot.NetherLinkBot;
 
 import java.util.List;
 
@@ -117,7 +117,7 @@ public class MessageHelper {
         }
 
         // todo: remove this once we figure out ErrorAnalyzer
-        MCCompanionBot.LOGGER.debug("EmbedBuilder with description: " + embedBuilder.getDescriptionBuilder() + " is being truncated to valid length.");
+        NetherLinkBot.LOGGER.debug("EmbedBuilder with description: " + embedBuilder.getDescriptionBuilder() + " is being truncated to valid length.");
 
         // remove entries from the bottom of the list until the length is valid, or we completely empty the list
         for (int i = embedBuilder.getFields().size() - 1; i > 0 && !embedBuilder.isValidLength(); i--) {

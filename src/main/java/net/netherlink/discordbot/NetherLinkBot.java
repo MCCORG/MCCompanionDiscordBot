@@ -62,9 +62,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MCCompanionBot {
+public class NetherLinkBot {
     // Instance Variables
-    public static final Logger LOGGER = LoggerFactory.getLogger(MCCompanionBot.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(NetherLinkBot.class);
     public static final List<Command> COMMANDS;
     public static final List<SlashCommand> SLASH_COMMANDS;
     public static AbstractStorageManager storageManager;

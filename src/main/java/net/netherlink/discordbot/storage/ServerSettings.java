@@ -31,7 +31,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.netherlink.discordbot.MCCompanionBot;
+import net.netherlink.discordbot.NetherLinkBot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.sqlite.util.StringUtils;
@@ -58,7 +58,7 @@ public class ServerSettings {
      */
     @NotNull
     public static List<String> getList(long serverID, String key) {
-        String listData = MCCompanionBot.storageManager.getServerPreference(serverID, key);
+        String listData = NetherLinkBot.storageManager.getServerPreference(serverID, key);
 
         if (listData == null) {
             return Collections.emptyList();
@@ -68,7 +68,7 @@ public class ServerSettings {
     }
 
     public static void setList(long serverID, String key, List<String> data) {
-        MCCompanionBot.storageManager.setServerPreference(serverID, key, StringUtils.join(data, ","));
+        NetherLinkBot.storageManager.setServerPreference(serverID, key, StringUtils.join(data, ","));
     }
 
     /**
@@ -80,7 +80,7 @@ public class ServerSettings {
      */
     @NotNull
     public static Map<String, String> getMap(long serverID, String key) {
-        String mapData = MCCompanionBot.storageManager.getServerPreference(serverID, key);
+        String mapData = NetherLinkBot.storageManager.getServerPreference(serverID, key);
         Map<String, String> map = new HashMap<>();
 
         if (mapData != null) {
@@ -101,7 +101,7 @@ public class ServerSettings {
      * @throws IllegalArgumentException If the channel is null or invalid
      */
     public static TextChannel getLogChannel(@NotNull Guild guild) throws IllegalArgumentException {
-        String channel = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), "log-channel");
+        String channel = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), "log-channel");
         return guild.getTextChannelById(channel);
     }
 
@@ -113,7 +113,7 @@ public class ServerSettings {
      * @throws IllegalArgumentException If the channel is null or invalid
      */
     public static TextChannel getDonationFeedsChannel(@NotNull Guild guild) throws IllegalArgumentException {
-        String channel = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), "donation-feeds-channel");
+        String channel = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), "donation-feeds-channel");
         return guild.getTextChannelById(channel);
     }
 
@@ -125,7 +125,7 @@ public class ServerSettings {
      * @throws IllegalArgumentException If the channel is null or invalid
      */
     public static TextChannel getUpdateChannel(@NotNull Guild guild) throws IllegalArgumentException {
-        String channel = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), "update-channel");
+        String channel = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), "update-channel");
         return guild.getTextChannelById(channel);
     }
 
@@ -215,7 +215,7 @@ public class ServerSettings {
      */
     @Nullable
     public static ForumChannel getForumChannel(@NotNull Guild guild) {
-        String channel = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), "forum-channel");
+        String channel = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), "forum-channel");
 
         if (channel == null) {
             return null;
@@ -230,7 +230,7 @@ public class ServerSettings {
      * @return The preview feeds channel for the guild
      */
     public static NewsChannel getPreviewFeedsChannel(@NotNull Guild guild) {
-        String channel = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), "preview-feeds-channel");
+        String channel = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), "preview-feeds-channel");
 
         if (channel == null) {
             return null;
@@ -246,7 +246,7 @@ public class ServerSettings {
      * @return The preview channel for the guild
      */
     public static ForumChannel getPreviewChannel(@NotNull Guild guild) {
-        String channel = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), "preview-channel");
+        String channel = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), "preview-channel");
 
         if (channel == null) {
             return null;
@@ -256,7 +256,7 @@ public class ServerSettings {
     }
 
     public static TextChannel getExploitReportsNotifyChannel(@NotNull Guild guild) throws IllegalArgumentException {
-        String channel = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), "exploit-reports-notify-channel");
+        String channel = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), "exploit-reports-notify-channel");
         if (channel == null || channel.isEmpty()) {
             return null;
         }

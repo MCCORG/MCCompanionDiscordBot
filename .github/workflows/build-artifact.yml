@@ -39,7 +39,7 @@ jobs:
         with:
           tag: latest
           name: "Latest Build"
-          artifacts: build/libs/MCCompanionBot.jar
+          artifacts: build/libs/NetherLinkBot.jar
           allowUpdates: true
           artifactErrorsFailBuild: true
           replacesArtifacts: true

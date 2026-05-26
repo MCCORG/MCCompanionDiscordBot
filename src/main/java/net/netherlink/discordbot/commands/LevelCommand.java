@@ -41,7 +41,7 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
-import net.netherlink.discordbot.MCCompanionBot;
+import net.netherlink.discordbot.NetherLinkBot;
 import net.netherlink.discordbot.storage.LevelInfo;
 import net.netherlink.discordbot.util.BotHelpers;
 import net.netherlink.discordbot.util.InkscapeCssParser;
@@ -105,7 +105,7 @@ public class LevelCommand extends SlashCommand {
         // Get the user from the member
         User user = member.getUser();
 
-        LevelInfo levelInfo = MCCompanionBot.storageManager.getLevel(member);
+        LevelInfo levelInfo = NetherLinkBot.storageManager.getLevel(member);
 
         try {
             XMLResourceDescriptor.setCSSParserClassName(InkscapeCssParser.class.getName());

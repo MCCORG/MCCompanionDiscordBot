@@ -34,7 +34,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.netherlink.discordbot.MCCompanionBot;
+import net.netherlink.discordbot.NetherLinkBot;
 import net.netherlink.discordbot.storage.ServerSettings;
 import net.netherlink.discordbot.util.BotColors;
 
@@ -128,12 +128,12 @@ public class SettingsCommand extends SlashCommand {
         switch (action) {
             case "get" -> {
                 title = "Setting value";
-                value = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), key);
+                value = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), key);
             }
             case "set" -> {
                 title = "Updated setting";
                 value = String.join(" ", updatedValue);
-                MCCompanionBot.storageManager.setServerPreference(guild.getIdLong(), key, value);
+                NetherLinkBot.storageManager.setServerPreference(guild.getIdLong(), key, value);
             }
             case "add" -> {
                 title = "Updated setting";
@@ -143,7 +143,7 @@ public class SettingsCommand extends SlashCommand {
 
                 ServerSettings.setList(guild.getIdLong(), key, list);
 
-                value = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), key);
+                value = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), key);
             }
             case "remove" -> {
                 title = "Updated setting";
@@ -153,7 +153,7 @@ public class SettingsCommand extends SlashCommand {
 
                 ServerSettings.setList(guild.getIdLong(), key, list);
 
-                value = MCCompanionBot.storageManager.getServerPreference(guild.getIdLong(), key);
+                value = NetherLinkBot.storageManager.getServerPreference(guild.getIdLong(), key);
             }
             default -> {
                 return new EmbedBuilder()

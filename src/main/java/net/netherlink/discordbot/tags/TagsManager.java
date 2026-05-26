@@ -27,7 +27,7 @@ package net.netherlink.discordbot.tags;
 
 import com.jagrosh.jdautilities.command.Command;
 import net.dv8tion.jda.api.components.buttons.Button;
-import net.netherlink.discordbot.MCCompanionBot;
+import net.netherlink.discordbot.NetherLinkBot;
 import net.netherlink.discordbot.util.BotColors;
 import net.netherlink.discordbot.util.BotHelpers;
 
@@ -124,7 +124,7 @@ public class TagsManager {
 
                                 String[] lineParts = line.trim().split(":", 2);
                                 if (lineParts.length < 2 || lineParts[0].isEmpty() || lineParts[1].isEmpty()) {
-                                    MCCompanionBot.LOGGER.warn("Invalid tag option line '" + line.trim() + "' for tag '" + tagName + "'!");
+                                    NetherLinkBot.LOGGER.warn("Invalid tag option line '" + line.trim() + "' for tag '" + tagName + "'!");
                                     continue;
                                 }
 
@@ -142,7 +142,7 @@ public class TagsManager {
                                         String[] data = lineParts[1].trim().replace("[", "").replace(")", "").split("]\\(");
                                         buttons.add(Button.link(data[1], data[0]));
                                     }
-                                    default -> MCCompanionBot.LOGGER.warn("Invalid tag option key '" + lineParts[0] + "' for tag '" + tagName + "'!");
+                                    default -> NetherLinkBot.LOGGER.warn("Invalid tag option key '" + lineParts[0] + "' for tag '" + tagName + "'!");
                                 }
                             }
 
@@ -153,7 +153,7 @@ public class TagsManager {
                                         TAGS.add(new EmbedTag(tagName, tagData.get("title"), content.toString().trim(), tagData.get("color"), tagData.get("image"), tagData.get("aliases"), buttons));
                                         SLASH_TAGS.add(new SlashTag(tagName, tagData.get("title"), content.toString().trim(), tagData.get("color"), tagData.get("image"), tagData.get("aliases"), buttons, 0));
                                     } catch (IllegalArgumentException e) {
-                                        MCCompanionBot.LOGGER.warn("Failed to create tag: " + e.getMessage());
+                                        NetherLinkBot.LOGGER.warn("Failed to create tag: " + e.getMessage());
                                         continue;
                                     }
                                     break;
@@ -163,27 +163,27 @@ public class TagsManager {
                                         TAGS.add(new RawTag(tagName, content.toString().trim(), tagData.get("aliases"), buttons));
                                         SLASH_TAGS.add(new SlashTag(tagName, null, content.toString().trim(), null, null,  tagData.get("aliases"), buttons, 1));
                                     } catch (IllegalArgumentException e) {
-                                        MCCompanionBot.LOGGER.warn("Failed to create tag: " + e.getMessage());
+                                        NetherLinkBot.LOGGER.warn("Failed to create tag: " + e.getMessage());
                                         continue;
                                     }
                                     break;
 
                                 case "issue-only":
                                     if (tagData.containsKey("aliases")) {
-                                        MCCompanionBot.LOGGER.warn("Tag '" + tagName + "' has aliases listed but is of type 'issue-only'. Ignoring aliases.");
+                                        NetherLinkBot.LOGGER.warn("Tag '" + tagName + "' has aliases listed but is of type 'issue-only'. Ignoring aliases.");
                                     }
 
                                     if (tagData.containsKey("image")) {
-                                        MCCompanionBot.LOGGER.warn("Tag '" + tagName + "' has image listed but is of type 'issue-only'. Ignoring image.");
+                                        NetherLinkBot.LOGGER.warn("Tag '" + tagName + "' has image listed but is of type 'issue-only'. Ignoring image.");
                                     }
 
                                     if (issueTriggers == null) {
-                                        MCCompanionBot.LOGGER.warn("Tag '" + tagName + "' has no issues listed but is of type 'issue-only'.");
+                                        NetherLinkBot.LOGGER.warn("Tag '" + tagName + "' has no issues listed but is of type 'issue-only'.");
                                     }
                                     break;
 
                                 default:
-                                    MCCompanionBot.LOGGER.warn("Invalid tag type '" + tagData.get("type") + "' for tag '" + tagName + "'! Ignoring tag.");
+                                    NetherLinkBot.LOGGER.warn("Invalid tag type '" + tagData.get("type") + "' for tag '" + tagName + "'! Ignoring tag.");
                                     continue;
                             }
 
@@ -202,11 +202,11 @@ public class TagsManager {
                         }
                     }
                 } catch (IOException | URISyntaxException e) {
-                    MCCompanionBot.LOGGER.error("Failed to load tag subfolders", e);
+                    NetherLinkBot.LOGGER.error("Failed to load tag subfolders", e);
                 }
             }
         } catch (IOException | URISyntaxException e) {
-            MCCompanionBot.LOGGER.error("Failed to load tags folder", e);
+            NetherLinkBot.LOGGER.error("Failed to load tags folder", e);
         }
 
         tagsLoaded = true;
