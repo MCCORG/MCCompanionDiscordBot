@@ -3,12 +3,12 @@ aliases: friend, fd
 
 ---
 
-**NetherLink Friends — How to use**
+**MCCompanion Friends — How to use**
 
 1. **Connect everything to the same network**
-   Make sure your phone/tablet running NetherLink and your console are on the **same Wi‑Fi** *(avoid Guest Wi‑Fi if possible)* while using NetherLink Friends.
+   Make sure your phone/tablet running MCCompanion and your console are on the **same Wi‑Fi** *(avoid Guest Wi‑Fi if possible)* while using MCCompanion Friends.
    
-2. **Open NetherLink**
+2. **Open MCCompanion**
    Launch the app on your phone or tablet.
 
 3. **Enter your server details**
@@ -18,10 +18,10 @@ aliases: friend, fd
    Tap on the server you prefer and select **Friends**.
 
 5. **Start Friends Mode**
-   Tap **Start Friends Mode**. NetherLink will send the configuration to its servers.
+   Tap **Start Friends Mode**. MCCompanion will send the configuration to its servers.
 
 6. **Add the bot as a friend on the Xbox network**
-   Copy the **gamertag** shown in the NetherLink app and add it as a friend on the **Xbox network**.
+   Copy the **gamertag** shown in the MCCompanion app and add it as a friend on the **Xbox network**.
 
 7. **Join from your console**
    Open **Minecraft** on your console and navigate to the friends section. You should see the user you added. Join their game.
