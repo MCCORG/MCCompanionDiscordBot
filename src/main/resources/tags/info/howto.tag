@@ -1,5 +1,5 @@
 type: text
-aliases: netherlink, ht
+aliases: mccompanion, ht
 
 ---
 

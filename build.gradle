@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-group 'net.netherlink.discordbot'
+group 'net.mccompanion.discordbot'
 version '3.0'
 
 repositories {
@@ -85,14 +85,14 @@ jar {
     manifest {
         attributes (
             'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
-            'Main-Class': 'net.netherlink.discordbot.NetherLinkBot'
+            'Main-Class': 'net.mccompanion.discordbot.MCCBot'
         )
     }
 }
 
 // Allow running with `./gradlew run` task
 application {
-    mainClass = 'net.netherlink.discordbot.NetherLinkBot'
+    mainClass = 'net.mccompanion.discordbot.MCCBot'
 }
 
 test {
