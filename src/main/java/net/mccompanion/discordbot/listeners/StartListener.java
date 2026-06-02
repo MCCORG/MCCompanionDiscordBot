@@ -147,7 +147,7 @@ public class StartListener extends ListenerAdapter {
 
     @NotNull
     public static List<FeaturedServers> fetchFeaturedServers() {
-        JSONArray arr = RestClient.get(FEATURED_SERVERS_URL).asJSONArray();
+        JSONArray arr = RestClient.get(FEATURED_SERVERS_URL).asJSONObject().getJSONArray("servers");
         List<FeaturedServers> servers = new ArrayList<>();
         for (int i = 0; i < arr.length(); i++) {
             JSONObject obj = arr.getJSONObject(i);
