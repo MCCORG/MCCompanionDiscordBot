@@ -4,6 +4,7 @@ aliases: resourcepack, rp, rps
 ---
 
 Please keep in mind that resource packs are provided as-is, and we do not offer support for them. That being said, you can follow the troubleshooting guide to try to get the resource packs feature working.
+
 **🔧 Resource Pack Troubleshooting Guide**
 
 If the resource pack isn't appearing on your console, try these steps:
