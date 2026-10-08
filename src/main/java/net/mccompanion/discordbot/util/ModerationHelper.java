@@ -211,13 +211,13 @@ public class ModerationHelper {
         });
     }
 
-    public static void timeoutUser(Member member, @Nullable Member moderator, Guild guild, Duration duration, boolean silent, String reason, BiConsumer<MessageEmbed, Boolean> callback) {
+    public static void timeoutUser(Member member, @Nullable Member moderator, Guild guild, Duration duration, boolean silent, String reason, @Nullable Channel originChannel, BiConsumer<MessageEmbed, Boolean> callback) {
         moderator = moderator == null ? guild.getSelfMember() : moderator;
         if (!prepareModeration(member, moderator, guild, callback)) return;
 
         User user = member.getUser();
         executePunishment(member, moderator, guild, user, "timeout", "Timed out user", "You have been timed out from " + guild.getName() + "!", reason, silent,
-                guild.timeoutFor(user, duration).reason(reason), null, callback);
+                guild.timeoutFor(user, duration).reason(reason), originChannel, callback);
     }
 
     public static void kickUser(Member member, @Nullable Member moderator, Guild guild, boolean silent, String reason, @Nullable Channel originChannel, BiConsumer<MessageEmbed, Boolean> callback) {
@@ -277,9 +277,11 @@ public class ModerationHelper {
                     .setColor(BotColors.SUCCESS.getColor())
                     .build();
 
-            ServerSettings.getLogChannel(guild).sendMessageEmbeds(result).queue();
+            TextChannel logChannel = ServerSettings.getLogChannel(guild);
+            logChannel.sendMessageEmbeds(result).queue();
             TextChannel moderationChannel = ServerSettings.getModChannel(guild);
-            if ((originChannel == null || !ServerSettings.isModChannel(guild, originChannel)) && moderationChannel != null) {
+            if ((originChannel == null || !ServerSettings.isModChannel(guild, originChannel))
+                    && moderationChannel != null && !moderationChannel.getId().equals(logChannel.getId())) {
                 moderationChannel.sendMessageEmbeds(result).queue();
             }
 

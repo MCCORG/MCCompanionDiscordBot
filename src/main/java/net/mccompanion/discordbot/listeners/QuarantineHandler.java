@@ -118,7 +118,7 @@ public class QuarantineHandler extends ListenerAdapter {
             case "honeypot-misuse", "timeout" -> {
                 String reason = actionId.equals("honeypot-misuse") ? "Honey pot channel misuse." : "Timed out while in quarantine.";
                 int days = actionId.equals("honeypot-misuse") ? 1 : 7;
-                ModerationHelper.timeoutUser(member, moderator, event.getGuild(), Duration.ofDays(days), false, reason, (embed, succeeded) -> {
+                ModerationHelper.timeoutUser(member, moderator, event.getGuild(), Duration.ofDays(days), false, reason, event.getChannel(), (embed, succeeded) -> {
                     if (succeeded) {
                         finishAction(event, actionId, embed);
                     } else {
