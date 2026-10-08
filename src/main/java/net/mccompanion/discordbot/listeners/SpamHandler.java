@@ -60,7 +60,7 @@ public class SpamHandler extends ListenerAdapter {
         SpamWindow window = this.messageCache.getIfPresent(key);
 
         if (window == null || now - window.windowStart() >= WINDOW_MILLIS) {
-            window = new SpamWindow(0, channelId, now);
+            window = new SpamWindow(1, channelId, now);
             this.messageCache.put(key, window);
         } else if (channelId != window.channelId()) { // Only increment if in a different channel
             // Keep the original window start so the window is fixed and not refreshed by later messages
