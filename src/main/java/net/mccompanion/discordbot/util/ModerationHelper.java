@@ -140,7 +140,7 @@ public class ModerationHelper {
                         .setColor(BotColors.WARNING.getColor())
                         .build();
                 channel.sendMessageEmbeds(notification).queue(ignoredMessage -> {}, ignoredFailure -> {});
-            }, ignored -> {});
+            }, ignoredChannel -> {});
 
             ActionRow row = ActionRow.of(
                     StringSelectMenu.create("quarantine-handler")
@@ -175,7 +175,7 @@ public class ModerationHelper {
                 }
 
                 forwardReferenceMessage(referenceMessage, message.getChannel(), deleteReferenceMessage);
-            }, ignored -> {});
+            }, ignoredMessage -> {});
 
             int id = MCCBot.storageManager.addLog(staffMember, "quarantine", user, reason);
             MessageEmbed quarantinedEmbed = new EmbedBuilder()
@@ -202,11 +202,11 @@ public class ModerationHelper {
         if (referenceMessage == null) return;
         referenceMessage.forwardTo(destination).queue(message -> {
             if (deleteReferenceMessage) {
-                referenceMessage.delete().queue(ignored -> {}, ignored -> {});
+                referenceMessage.delete().queue(ignoredResult -> {}, ignoredDeleteFailure -> {});
             }
         }, ignored -> {
             if (deleteReferenceMessage) {
-                referenceMessage.delete().queue(ignored -> {}, ignored -> {});
+                referenceMessage.delete().queue(ignoredResult -> {}, ignoredDeleteFailure -> {});
             }
         });
     }
@@ -284,7 +284,7 @@ public class ModerationHelper {
                 if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
                     notification.addField("Additional Info", punishmentMessage, false);
                 }
-                user.openPrivateChannel().queue(channel -> channel.sendMessageEmbeds(notification.build()).queue(ignoredMessage -> {}, ignoredFailure -> {}), ignored -> {});
+                user.openPrivateChannel().queue(channel -> channel.sendMessageEmbeds(notification.build()).queue(ignoredMessage -> {}, ignoredFailure -> {}), ignoredChannel -> {});
             }
         }, ignored -> callback.accept(errorEmbed("Moderation action failed", "I couldn't " + action + " " + user.getAsMention() + "."), false));
     }
