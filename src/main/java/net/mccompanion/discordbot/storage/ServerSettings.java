@@ -26,10 +26,13 @@
 package net.mccompanion.discordbot.storage;
 
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.mccompanion.discordbot.MCCBot;
 import org.jetbrains.annotations.NotNull;
@@ -106,6 +109,55 @@ public class ServerSettings {
     }
 
     /**
+     * Get the moderation channel for the selected guild
+     *
+     * @param guild ID of the guild to get the channel for
+     * @return The {@link TextChannel} for moderation actions, or null if it is unset or invalid
+     */
+    @Nullable
+    public static TextChannel getModChannel(@NotNull Guild guild) throws IllegalArgumentException {
+        String channel = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "moderation-channel");
+        if (channel == null || channel.isEmpty()) {
+            return null;
+        }
+        try {
+            return guild.getTextChannelById(channel);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * Check if the channel is the mod channel
+     *
+     * @param messageChannel ID of the channel
+     * @return The {@code boolean} for if this is the mod channel
+     */
+    public static boolean isModChannel(@NotNull Guild guild, @NotNull Channel messageChannel) {
+        String channel = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "moderation-channel");
+        return messageChannel.getId().equals(channel);
+    }
+
+    /**
+     * Get the moderation role for the selected guild
+     *
+     * @param guild ID of the guild to get the role for
+     * @return The {@link Role} to ping for moderation action, or null if it is unset or invalid
+     */
+    @Nullable
+    public static Role getModRole(@NotNull Guild guild) throws IllegalArgumentException {
+        String role = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "moderation-role");
+        if (role == null || role.isEmpty()) {
+            return null;
+        }
+        try {
+            return guild.getRoleById(role);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    /**
      * Get the donation feeds channel for the selected guild
      *
      * @param guild ID of the guild to get the channel for
@@ -153,8 +205,15 @@ public class ServerSettings {
      * @return If we should exclude the channel
      */
     public static boolean shouldNotCheckError(MessageChannel channel) {
+        Guild server = getGuild(channel);
 
-        if (getGuild(channel) == null) {
+        if (server == null) {
+            return true;
+        }
+
+        // Ignore file handling in Honeypot channels
+        String honeyPotChannelId = MCCBot.storageManager.getServerPreference(server.getIdLong(), "honey-pot-channel");
+        if (honeyPotChannelId != null && honeyPotChannelId.equals(channel.getId())) {
             return true;
         }
 

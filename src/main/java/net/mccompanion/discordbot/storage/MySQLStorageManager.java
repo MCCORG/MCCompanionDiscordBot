@@ -37,6 +37,7 @@ import net.mccompanion.discordbot.util.PropertiesManager;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -152,19 +153,30 @@ public class MySQLStorageManager extends AbstractStorageManager {
     public int addLog(Member user, String action, UserSnowflake target, String reason) {
         checkConnection();
         try {
-            Statement addLogEntry = connection.createStatement();
             long time = Instant.now().getEpochSecond();
-            addLogEntry.executeUpdate("INSERT INTO `mod_log` (`server`, `time`, `user`, `action`, `target`, `reason`) VALUES (" + user.getGuild().getId() + ", " + time + ", " + user.getId() + ", '" + action + "', " + target.getId() + ", '" + reason + "');");
-            addLogEntry.close();
-
-            Statement getLogEntry = connection.createStatement();
-            ResultSet rs = getLogEntry.executeQuery("SELECT `id` FROM `mod_log` WHERE `server`=" + user.getGuild().getId() + " AND `time`=" + time + " AND `user`=" + user.getId() + " AND `action`='" + action + "' AND `target`=" + target.getId() + " AND `reason`='" + reason + "' LIMIT 1;");
-
-            if (rs.next()) {
-                return rs.getInt("id");
+            try (PreparedStatement addLogEntry = connection.prepareStatement("INSERT INTO `mod_log` (`server`, `time`, `user`, `action`, `target`, `reason`) VALUES (?, ?, ?, ?, ?, ?);")) {
+                addLogEntry.setLong(1, user.getGuild().getIdLong());
+                addLogEntry.setLong(2, time);
+                addLogEntry.setLong(3, user.getIdLong());
+                addLogEntry.setString(4, action);
+                addLogEntry.setLong(5, target.getIdLong());
+                addLogEntry.setString(6, reason);
+                addLogEntry.executeUpdate();
             }
 
-            getLogEntry.close();
+            try (PreparedStatement getLogEntry = connection.prepareStatement("SELECT `id` FROM `mod_log` WHERE `server`=? AND `time`=? AND `user`=? AND `action`=? AND `target`=? AND `reason`=? LIMIT 1;")) {
+                getLogEntry.setLong(1, user.getGuild().getIdLong());
+                getLogEntry.setLong(2, time);
+                getLogEntry.setLong(3, user.getIdLong());
+                getLogEntry.setString(4, action);
+                getLogEntry.setLong(5, target.getIdLong());
+                getLogEntry.setString(6, reason);
+                try (ResultSet rs = getLogEntry.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("id");
+                    }
+                }
+            }
         } catch (SQLException ignored) { }
 
         return -1;

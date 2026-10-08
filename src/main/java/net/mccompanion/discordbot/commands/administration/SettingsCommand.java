@@ -50,7 +50,7 @@ public class SettingsCommand extends SlashCommand {
         this.hidden = true;
         this.help = "Customize the bot's settings";
 
-        this.userPermissions = new Permission[] { Permission.MESSAGE_MANAGE };
+        this.userPermissions = new Permission[] { Permission.MANAGE_SERVER };
 
         this.options = Arrays.asList(
                 new OptionData(OptionType.STRING, "action", "The action to perform", true)
@@ -68,7 +68,10 @@ public class SettingsCommand extends SlashCommand {
                         .addChoice("Don't log","dont-log")
                         .addChoice("Forum Channel", "forum-channel")
                         .addChoice("Health Checks", "health-checks")
+                        .addChoice("Honey Pot Channel", "honey-pot-channel")
                         .addChoice("Log channel", "log-channel")
+                        .addChoice("Moderation channel", "moderation-channel")
+                        .addChoice("Moderation role", "moderation-role")
                         .addChoice("Preview Channel", "preview-channel")
                         .addChoice("Preview Feeds Channel", "preview-feeds-channel")
                         .addChoice("Punishment Message", "punishment-message")
