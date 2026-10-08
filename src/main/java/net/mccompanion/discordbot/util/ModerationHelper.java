@@ -255,6 +255,16 @@ public class ModerationHelper {
     }
 
     private static void executePunishment(Member member, Member moderator, Guild guild, User user, String action, String successTitle, String notificationTitle, String reason, boolean silent, RestAction<Void> request, @Nullable Channel originChannel, BiConsumer<MessageEmbed, Boolean> callback) {
+        // Kicked/banned users no longer share a server with the bot, so the DM must be sent before the action
+        boolean notifyFirst = !silent && (action.equals("kick") || action.equals("ban"));
+        if (notifyFirst) {
+            sendPunishmentNotification(guild, user, notificationTitle, reason, () -> runPunishment(moderator, guild, user, action, successTitle, reason, request, originChannel, callback, null));
+        } else {
+            runPunishment(moderator, guild, user, action, successTitle, reason, request, originChannel, callback, silent ? null : notificationTitle);
+        }
+    }
+
+    private static void runPunishment(Member moderator, Guild guild, User user, String action, String successTitle, String reason, RestAction<Void> request, @Nullable Channel originChannel, BiConsumer<MessageEmbed, Boolean> callback, @Nullable String notifyAfterTitle) {
         request.queue(ignored -> {
             int id = MCCBot.storageManager.addLog(moderator, action, user, reason);
             MessageEmbed result = new EmbedBuilder()
@@ -274,19 +284,25 @@ public class ModerationHelper {
             }
 
             callback.accept(result, true);
-            if (!silent) {
-                EmbedBuilder notification = new EmbedBuilder()
-                        .setTitle(notificationTitle)
-                        .addField("Reason", reason, false)
-                        .setTimestamp(Instant.now())
-                        .setColor(BotColors.FAILURE.getColor());
-                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
-                if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
-                    notification.addField("Additional Info", punishmentMessage, false);
-                }
-                user.openPrivateChannel().queue(channel -> channel.sendMessageEmbeds(notification.build()).queue(ignoredMessage -> {}, ignoredFailure -> {}), ignoredChannel -> {});
+            if (notifyAfterTitle != null) {
+                sendPunishmentNotification(guild, user, notifyAfterTitle, reason, () -> {});
             }
         }, ignored -> callback.accept(errorEmbed("Moderation action failed", "I couldn't " + action + " " + user.getAsMention() + "."), false));
+    }
+
+    private static void sendPunishmentNotification(Guild guild, User user, String title, String reason, Runnable then) {
+        EmbedBuilder notification = new EmbedBuilder()
+                .setTitle(title)
+                .addField("Reason", reason, false)
+                .setTimestamp(Instant.now())
+                .setColor(BotColors.FAILURE.getColor());
+        String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
+        if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
+            notification.addField("Additional Info", punishmentMessage, false);
+        }
+        user.openPrivateChannel().queue(
+                channel -> channel.sendMessageEmbeds(notification.build()).queue(sent -> then.run(), failure -> then.run()),
+                failure -> then.run());
     }
 
     private static MessageEmbed errorEmbed(String title, String description) {
