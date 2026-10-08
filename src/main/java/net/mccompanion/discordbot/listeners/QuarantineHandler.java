@@ -28,19 +28,13 @@ package net.mccompanion.discordbot.listeners;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
-import net.mccompanion.discordbot.MCCBot;
 import net.mccompanion.discordbot.util.BotColors;
 import net.mccompanion.discordbot.util.ModerationHelper;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -53,18 +47,20 @@ public class QuarantineHandler extends ListenerAdapter {
         String customId = event.getComponentId();
         if (!customId.equals("quarantine-handler")) return;
 
-        String actionId = event.getValues().getFirst();
+        // Acknowledge the interaction immediately to prevent webhook expiration errors
+        event.deferEdit().queue();
 
+        String actionId = event.getValues().getFirst();
         String userId = event.getMessage().getContentRaw().substring(2, event.getMessage().getContentRaw().length() - 1);
 
         Member member = event.getGuild().getMemberById(userId);
         if (member == null) {
-            event.reply("Member has left server. Cannot take quarantine action.").queue();
+            event.getHook().sendMessage("Member has left server. Cannot take quarantine action.").queue();
             return;
         }
 
-        // Remove the buttons!!!
-        event.getMessage().editMessage(new MessageEditBuilder()
+        // Remove buttons and edit the original message safely via the interaction hook
+        event.getHook().editOriginal(new MessageEditBuilder()
                 .setContent("Handled by: " + event.getUser().getAsMention())
                 .setEmbeds(new EmbedBuilder()
                         .setTitle("Quarantine action handled.")
@@ -78,7 +74,7 @@ public class QuarantineHandler extends ListenerAdapter {
         switch (actionId) {
             case "unquarantine" -> {
                 member.removeTimeout().queue(v -> {
-                    event.replyEmbeds(
+                    event.getHook().sendMessageEmbeds(
                             new EmbedBuilder()
                                     .setTitle("Unquarantined member")
                                     .setDescription("Unquarantined " + member.getAsMention() + ".")
@@ -95,7 +91,7 @@ public class QuarantineHandler extends ListenerAdapter {
                         channel.sendMessageEmbeds(embedBuilder.build()).queue();
                     });
                 }, throwable -> {
-                    event.replyEmbeds(
+                    event.getHook().sendMessageEmbeds(
                             new EmbedBuilder()
                                     .setTitle("Error")
                                     .setDescription("Issue unquaranting " + member.getAsMention() + ".")
@@ -108,9 +104,9 @@ public class QuarantineHandler extends ListenerAdapter {
                 int days = actionId.equals("honeypot-misuse") ? 1 : 7;
 
                 member.removeTimeout().queue(v -> {
-                    event.replyEmbeds(ModerationHelper.timeoutUser(member, event.getMember(), event.getGuild(), Duration.ofDays(days), false, reason)).queue();
+                    event.getHook().sendMessageEmbeds(ModerationHelper.timeoutUser(member, event.getMember(), event.getGuild(), Duration.ofDays(days), false, reason)).queue();
                 }, throwable -> {
-                    event.replyEmbeds(
+                    event.getHook().sendMessageEmbeds(
                             new EmbedBuilder()
                                     .setTitle("Error")
                                     .setDescription("Issue when changing timeout time for " + member.getAsMention() + ".")
@@ -120,10 +116,10 @@ public class QuarantineHandler extends ListenerAdapter {
             }
             case "kick" -> {
                 member.removeTimeout().queue(v -> {
-                    event.replyEmbeds(ModerationHelper.kickUser(member, event.getMember(), event.getGuild(), false, "Kicked from quarantine", event.getChannel())).queue();
+                    event.getHook().sendMessageEmbeds(ModerationHelper.kickUser(member, event.getMember(), event.getGuild(), false, "Kicked from quarantine", event.getChannel())).queue();
                 }, throwable -> {
-                    event.replyEmbeds(ModerationHelper.kickUser(member, event.getMember(), event.getGuild(), false, "Kicked from quarantine", event.getChannel())).queue();
-                    event.replyEmbeds(
+                    event.getHook().sendMessageEmbeds(ModerationHelper.kickUser(member, event.getMember(), event.getGuild(), false, "Kicked from quarantine", event.getChannel())).queue();
+                    event.getHook().sendMessageEmbeds(
                             new EmbedBuilder()
                                     .setTitle("Error")
                                     .setDescription("Issue when kicking " + member.getAsMention() + ", couldn't remove timeout.")
@@ -136,10 +132,10 @@ public class QuarantineHandler extends ListenerAdapter {
                 int days = actionId.equals("compromised") ? 1 : 0;
 
                 member.removeTimeout().queue(v -> {
-                    event.replyEmbeds(ModerationHelper.banUser(member, event.getMember(), event.getGuild(), days, false, reason, event.getChannel())).queue();
+                    event.getHook().sendMessageEmbeds(ModerationHelper.banUser(member, event.getMember(), event.getGuild(), days, false, reason, event.getChannel())).queue();
                 }, throwable -> {
-                    event.replyEmbeds(ModerationHelper.banUser(member, event.getMember(), event.getGuild(), days, false, reason, event.getChannel())).queue();
-                    event.replyEmbeds(
+                    event.getHook().sendMessageEmbeds(ModerationHelper.banUser(member, event.getMember(), event.getGuild(), days, false, reason, event.getChannel())).queue();
+                    event.getHook().sendMessageEmbeds(
                             new EmbedBuilder()
                                     .setTitle("Error")
                                     .setDescription("Issue when kicking " + member.getAsMention() + ", couldn't remove timeout.")
@@ -148,7 +144,7 @@ public class QuarantineHandler extends ListenerAdapter {
                 });
             }
             default -> {
-                event.reply("Invalid action ID %s.".formatted(actionId)).queue();
+                event.getHook().sendMessage("Invalid action ID %s.".formatted(actionId)).queue();
             }
         }
     }

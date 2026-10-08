@@ -58,7 +58,7 @@ public class HoneyPotHandler extends ListenerAdapter {
                 }
 
                 messages.stream().filter(m -> !m.getAuthor().getId().equals(guild.getSelfMember().getId())).forEach(message -> {
-                    ModerationHelper.quarantineMember(message.getMember(), message.getGuild(), "Messaged in the honey pot channel.", false, null, message, true);
+                    if (message.getMember() != null) ModerationHelper.quarantineMember(message.getMember(), message.getGuild(), "Messaged in the honey pot channel.", false, null, message, true);
                 });
             });
         }
