@@ -38,8 +38,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class QuarantineHandler extends ListenerAdapter {
+    private final Set<Long> claimedMessages = ConcurrentHashMap.newKeySet();
+
     @Override
     public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
         if (!event.isFromGuild()) return;
@@ -66,6 +70,12 @@ public class QuarantineHandler extends ListenerAdapter {
             return;
         }
 
+        long messageId = event.getMessageIdLong();
+        if (!claimedMessages.add(messageId)) {
+            event.reply("Another moderator is already handling this quarantine.").setEphemeral(true).queue();
+            return;
+        }
+
         // Acknowledge the interaction immediately to prevent webhook expiration errors
         event.deferEdit().queue();
 
@@ -73,6 +83,7 @@ public class QuarantineHandler extends ListenerAdapter {
 
         Member member = event.getGuild().getMemberById(userId);
         if (member == null) {
+            claimedMessages.remove(messageId);
             event.getHook().sendMessage("Member has left server. Cannot take quarantine action.").queue();
             return;
         }
@@ -95,6 +106,7 @@ public class QuarantineHandler extends ListenerAdapter {
                         channel.sendMessageEmbeds(embedBuilder.build()).queue();
                     });
                 }, throwable -> {
+                    claimedMessages.remove(messageId);
                     event.getHook().sendMessageEmbeds(
                             new EmbedBuilder()
                                     .setTitle("Error")
@@ -110,6 +122,7 @@ public class QuarantineHandler extends ListenerAdapter {
                     if (succeeded) {
                         finishAction(event, actionId, embed);
                     } else {
+                        claimedMessages.remove(messageId);
                         event.getHook().sendMessageEmbeds(embed).queue();
                     }
                 });
@@ -119,6 +132,7 @@ public class QuarantineHandler extends ListenerAdapter {
                     if (succeeded) {
                         finishAction(event, actionId, embed);
                     } else {
+                        claimedMessages.remove(messageId);
                         event.getHook().sendMessageEmbeds(embed).queue();
                     }
                 });
@@ -130,6 +144,7 @@ public class QuarantineHandler extends ListenerAdapter {
                     if (succeeded) {
                         finishAction(event, actionId, embed);
                     } else {
+                        claimedMessages.remove(messageId);
                         event.getHook().sendMessageEmbeds(embed).queue();
                     }
                 });
@@ -138,6 +153,7 @@ public class QuarantineHandler extends ListenerAdapter {
     }
 
     private void finishAction(StringSelectInteractionEvent event, String actionId, net.dv8tion.jda.api.entities.MessageEmbed result) {
+        claimedMessages.remove(event.getMessageIdLong());
         event.getHook().editOriginal(new MessageEditBuilder()
                 .setContent("Handled by: " + event.getUser().getAsMention())
                 .setEmbeds(new EmbedBuilder()

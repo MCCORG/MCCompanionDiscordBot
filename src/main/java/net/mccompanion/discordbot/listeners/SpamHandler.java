@@ -27,7 +27,6 @@ package net.mccompanion.discordbot.listeners;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import it.unimi.dsi.fastutil.Pair;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.mccompanion.discordbot.util.ModerationHelper;
@@ -36,11 +35,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.TimeUnit;
 
 public class SpamHandler extends ListenerAdapter {
-    private final Cache<Long, Pair<Integer, Long>> messageCache;
+    private static final long WINDOW_MILLIS = TimeUnit.SECONDS.toMillis(5);
+
+    private record SpamWindow(int count, long channelId, long windowStart) {
+    }
+
+    private final Cache<String, SpamWindow> messageCache;
 
     public SpamHandler() {
         this.messageCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(5, TimeUnit.SECONDS)
+                .expireAfterWrite(WINDOW_MILLIS, TimeUnit.MILLISECONDS)
                 .build();
     }
 
@@ -49,21 +53,24 @@ public class SpamHandler extends ListenerAdapter {
         if (event.getAuthor().isBot()) return;
         if (!event.isFromGuild()) return;
 
-        long userId = event.getAuthor().getIdLong();
+        String key = event.getGuild().getId() + ":" + event.getAuthor().getId();
+        long channelId = event.getChannel().getIdLong();
+        long now = System.currentTimeMillis();
 
-        Pair<Integer, Long> messages = this.messageCache.getIfPresent(userId);
+        SpamWindow window = this.messageCache.getIfPresent(key);
 
-        if (messages == null) {
-            messages = Pair.of(0, event.getChannel().getIdLong());
-        } else if (event.getChannel().getIdLong() != messages.right()) { // Only increment if in a different channel
-            messages = Pair.of(messages.left() + 1, event.getChannel().getIdLong());
+        if (window == null || now - window.windowStart() >= WINDOW_MILLIS) {
+            window = new SpamWindow(0, channelId, now);
+            this.messageCache.put(key, window);
+        } else if (channelId != window.channelId()) { // Only increment if in a different channel
+            // Keep the original window start so the window is fixed and not refreshed by later messages
+            window = new SpamWindow(window.count() + 1, channelId, window.windowStart());
+            this.messageCache.put(key, window);
         }
 
-        this.messageCache.put(userId, messages);
-
-        if (messages.left() >= 5) {
+        if (window.count() >= 5) {
             // 5 or more messages, in different channels, really really fast... we'll quarantine
-            messageCache.invalidate(userId);
+            messageCache.invalidate(key);
             ModerationHelper.quarantineMember(event.getMember(), event.getGuild(), "Suspected account compromise (Message spamming)", true, null, event.getMessage(), false);
         }
     }

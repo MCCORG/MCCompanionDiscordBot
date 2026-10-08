@@ -177,11 +177,11 @@ public class ModerationHelper {
                 forwardReferenceMessage(referenceMessage, message.getChannel(), deleteReferenceMessage);
             }, ignoredMessage -> {});
 
-            int id = MCCBot.storageManager.addLog(staffMember, "quarantine", user, reason);
+            int id = MCCBot.storageManager.addLog(actor, "quarantine", user, reason);
             MessageEmbed quarantinedEmbed = new EmbedBuilder()
                     .setTitle("Quarantined user")
                     .addField("User", user.getAsMention(), false)
-                    .addField("Staff member", staffMember.getAsMention(), false)
+                    .addField("Staff member", actor.getAsMention(), false)
                     .addField("Reason", reason, false)
                     .setFooter("ID: " + id)
                     .setTimestamp(Instant.now())
