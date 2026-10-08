@@ -23,7 +23,7 @@
  * @link https://github.com/GeyserMC/GeyserDiscordBot
  */
 
-package net.mccompanion.discordbot.context_menus;
+package net.mccompanion.discordbot.tags;
 
 import com.jagrosh.jdautilities.command.CommandListener;
 import net.dv8tion.jda.api.EmbedBuilder;
