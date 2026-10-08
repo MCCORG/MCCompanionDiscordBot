@@ -198,7 +198,7 @@ public class ServerSettings {
         }
 
         // Ignore file handling in Honeypot channels
-        String honeyPotChannelId = GeyserBot.storageManager.getServerPreference(server.getIdLong(), "honey-pot-channel");
+        String honeyPotChannelId = MCCBot.storageManager.getServerPreference(server.getIdLong(), "honey-pot-channel");
         if (honeyPotChannelId != null && honeyPotChannelId.equals(channel.getId())) {
             return true;
         }
