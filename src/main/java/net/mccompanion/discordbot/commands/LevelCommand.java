@@ -129,7 +129,7 @@ public class LevelCommand extends SlashCommand {
             TranscoderInput transcoderInput = new TranscoderInput(doc);
 
             // Set the output file
-            File tempLevelFile = File.createTempFile("MCCBot-Level-", ".png");
+            File tempLevelFile = File.createTempFile("GeyserBot-Level-", ".png");
             OutputStream outputStream = new FileOutputStream(tempLevelFile);
             TranscoderOutput transcoderOutput = new TranscoderOutput(outputStream);
 
