@@ -112,12 +112,19 @@ public class ServerSettings {
      * Get the moderation channel for the selected guild
      *
      * @param guild ID of the guild to get the channel for
-     * @return The {@link TextChannel} for moderation actions
-     * @throws IllegalArgumentException If the channel is null or invalid
+     * @return The {@link TextChannel} for moderation actions, or null if it is unset or invalid
      */
+    @Nullable
     public static TextChannel getModChannel(@NotNull Guild guild) throws IllegalArgumentException {
         String channel = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "moderation-channel");
-        return guild.getTextChannelById(channel);
+        if (channel == null || channel.isEmpty()) {
+            return null;
+        }
+        try {
+            return guild.getTextChannelById(channel);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     /**
@@ -135,12 +142,19 @@ public class ServerSettings {
      * Get the moderation role for the selected guild
      *
      * @param guild ID of the guild to get the role for
-     * @return The {@link Role} to ping for moderation action
-     * @throws IllegalArgumentException If the role is null or invalid
+     * @return The {@link Role} to ping for moderation action, or null if it is unset or invalid
      */
+    @Nullable
     public static Role getModRole(@NotNull Guild guild) throws IllegalArgumentException {
         String role = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "moderation-role");
-        return guild.getRoleById(role);
+        if (role == null || role.isEmpty()) {
+            return null;
+        }
+        try {
+            return guild.getRoleById(role);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     /**

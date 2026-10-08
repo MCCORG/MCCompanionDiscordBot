@@ -30,7 +30,9 @@ import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.mccompanion.discordbot.MCCBot;
@@ -39,20 +41,28 @@ import net.mccompanion.discordbot.storage.ServerSettings;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 
 public class ModerationHelper {
     private ModerationHelper() {}
 
     public static void quarantineMember(Member user, Guild guild, String reason, boolean automatic, @Nullable Member staffMember, @Nullable Message referenceMessage, boolean deleteReferenceMessage) {
-        if (staffMember == null) staffMember = guild.getSelfMember();
+        Member actor = staffMember == null ? guild.getSelfMember() : staffMember;
 
         Member checkMember = guild.getMemberById(user.getId());
         if (checkMember == null) {
             if (referenceMessage != null && deleteReferenceMessage) {
                 referenceMessage.delete().queue(v -> {}, throwable -> {});
+            }
+            return;
+        }
+
+        TextChannel moderationChannel = ServerSettings.getModChannel(guild);
+        if (moderationChannel == null) {
+            if (referenceMessage != null) {
+                referenceMessage.reply("Quarantine could not be applied because the moderation channel is not configured.")
+                        .queue(ignored -> {}, ignored -> {});
             }
             return;
         }
@@ -65,20 +75,7 @@ public class ModerationHelper {
             title = "You have been timed out in " + guild.getName() + "!";
         }
 
-        user.getUser().openPrivateChannel().queue((channel) -> {
-            MessageEmbed embed = new EmbedBuilder()
-                    .setTitle(title)
-                    .addField("Reason", reason, false)
-                    .addField("Recommended Actions", "Change your Discord password, enable 2FA, and scan your computer for malware. See [Discord's article](https://support.discord.com/hc/en-us/articles/24160905919511-My-Discord-Account-was-Hacked-or-Compromised) for more info.", false)
-                    .addField("Information", "If you believe this was an accident or a false flag, please reach out to a member of staff in order to get this sorted.", false)
-                    .setTimestamp(Instant.now())
-                    .setColor(BotColors.WARNING.getColor())
-                    .build();
-
-            channel.sendMessageEmbeds(embed).queue();
-        });
-
-        if (!staffMember.canInteract(user)) {
+        if (!actor.canInteract(user)) {
             MessageEmbed modChatEmbed = new EmbedBuilder()
                     .setTitle("Unactioned quarantine.")
                     .setDescription(user.getAsMention() + " cannot be quarantined as I do not have permission to timeout the user. Please take manual action!")
@@ -86,7 +83,7 @@ public class ModerationHelper {
                     .setColor(BotColors.FAILURE.getColor())
                     .build();
 
-            ServerSettings.getModChannel(guild).sendMessage(
+            moderationChannel.sendMessage(
                     new MessageCreateBuilder()
                             .setContent(user.getAsMention())
                             .setEmbeds(modChatEmbed)
@@ -113,12 +110,12 @@ public class ModerationHelper {
             });
 
             // Now log it!
-            int id = MCCBot.storageManager.addLog(staffMember, "quarantine", user, reason);
+            int id = MCCBot.storageManager.addLog(actor, "quarantine", user, reason);
 
             MessageEmbed quarantinedEmbed = new EmbedBuilder()
                     .setTitle("Quarantined user (Unactioned!)")
                     .addField("User", user.getAsMention(), false)
-                    .addField("Staff member", staffMember.getAsMention(), false)
+                    .addField("Staff member", actor.getAsMention(), false)
                     .addField("Reason", reason, false)
                     .setFooter("ID: " + id)
                     .setTimestamp(Instant.now())
@@ -131,288 +128,173 @@ public class ModerationHelper {
         }
 
         Duration duration = Duration.ofSeconds(60 * 60 * 24 * 28); // 28 days
-        user.timeoutFor(duration).queue();
+        Instant expiry = Instant.now().plus(duration);
+        user.timeoutFor(duration).queue(ignored -> {
+            user.getUser().openPrivateChannel().queue(channel -> {
+                MessageEmbed notification = new EmbedBuilder()
+                        .setTitle(title)
+                        .addField("Reason", reason, false)
+                        .addField("Recommended Actions", "Change your Discord password, enable 2FA, and scan your computer for malware. See [Discord's article](https://support.discord.com/hc/en-us/articles/24160905919511-My-Discord-Account-was-Hacked-or-Compromised) for more info.", false)
+                        .addField("Information", "If you believe this was an accident or a false flag, please reach out to a member of staff in order to get this sorted.", false)
+                        .setTimestamp(Instant.now())
+                        .setColor(BotColors.WARNING.getColor())
+                        .build();
+                channel.sendMessageEmbeds(notification).queue(ignoredMessage -> {}, ignoredFailure -> {});
+            }, ignored -> {});
 
-        // Send a message in the mod chat with buttons to take action
-        ActionRow row = ActionRow.of(
-                StringSelectMenu.create("quarantine-handler")
-                        .setPlaceholder("Select an action")
-                        .addOption("Unquarantine", "unquarantine", "Unquarantine the user.")
-                        .addOption("Honey pot misuse", "honeypot-misuse", "Punish the user for misuse of the honeypot channel. (1 day timeout.)")
-                        .addOption("Compromised account", "compromised", "Ban the user for compromised account.")
-                        .addOption("Timeout (1 week)", "timeout", "Timeout the user for 1 week.")
-                        .addOption("Kick", "kick", "Kick the user.")
-                        .addOption("Ban", "ban", "Ban the user.")
-                        .build()
-        );
+            ActionRow row = ActionRow.of(
+                    StringSelectMenu.create("quarantine-handler")
+                            .setPlaceholder("Select an action")
+                            .addOption("Unquarantine", "unquarantine", "Unquarantine the user.")
+                            .addOption("Honey pot misuse", "honeypot-misuse", "Punish the user for misuse of the honeypot channel. (1 day timeout.)")
+                            .addOption("Compromised account", "compromised", "Ban the user for compromised account.")
+                            .addOption("Timeout (1 week)", "timeout", "Timeout the user for 1 week.")
+                            .addOption("Kick", "kick", "Kick the user.")
+                            .addOption("Ban", "ban", "Ban the user.")
+                            .build()
+            );
 
-        String timestamp = TimeFormat.RELATIVE.format(LocalDateTime.now().plusDays(28).toInstant(ZoneOffset.UTC));
+            MessageEmbed modChatEmbed = new EmbedBuilder()
+                    .setTitle("Quarantined user")
+                    .setDescription(user.getAsMention() + " has been quarantined. Select an action below to take. Quarantine expires %s.".formatted(TimeFormat.RELATIVE.format(expiry)))
+                    .setTimestamp(Instant.now())
+                    .setColor(BotColors.FAILURE.getColor())
+                    .build();
 
-        MessageEmbed modChatEmbed = new EmbedBuilder()
-                .setTitle("Quarantined user")
-                .setDescription(user.getAsMention() + " has been quarantined. Select an action below to take. Quarantine expires %s.".formatted(timestamp))
+            moderationChannel.sendMessage(
+                    new MessageCreateBuilder()
+                            .setContent(user.getAsMention())
+                            .setEmbeds(modChatEmbed)
+                            .build()
+            ).addComponents(row).queue(message -> {
+                Role moderationRole = ServerSettings.getModRole(guild);
+                if (moderationRole != null) {
+                    message.reply(moderationRole.getAsMention())
+                            .setAllowedMentions(null)
+                            .queue();
+                }
+
+                forwardReferenceMessage(referenceMessage, message.getChannel(), deleteReferenceMessage);
+            }, ignored -> {});
+
+            int id = MCCBot.storageManager.addLog(staffMember, "quarantine", user, reason);
+            MessageEmbed quarantinedEmbed = new EmbedBuilder()
+                    .setTitle("Quarantined user")
+                    .addField("User", user.getAsMention(), false)
+                    .addField("Staff member", staffMember.getAsMention(), false)
+                    .addField("Reason", reason, false)
+                    .setFooter("ID: " + id)
+                    .setTimestamp(Instant.now())
+                    .setColor(BotColors.WARNING.getColor())
+                    .build();
+            ServerSettings.getLogChannel(guild).sendMessageEmbeds(quarantinedEmbed).queue();
+        }, ignored -> {
+            moderationChannel.sendMessageEmbeds(new EmbedBuilder()
+                    .setTitle("Quarantine failed")
+                    .setDescription("I couldn't timeout " + user.getAsMention() + ". No quarantine action was taken.")
+                    .setTimestamp(Instant.now())
+                    .setColor(BotColors.FAILURE.getColor())
+                    .build()).queue();
+        });
+    }
+
+    private static void forwardReferenceMessage(@Nullable Message referenceMessage, MessageChannel destination, boolean deleteReferenceMessage) {
+        if (referenceMessage == null) return;
+        referenceMessage.forwardTo(destination).queue(message -> {
+            if (deleteReferenceMessage) {
+                referenceMessage.delete().queue(ignored -> {}, ignored -> {});
+            }
+        }, ignored -> {
+            if (deleteReferenceMessage) {
+                referenceMessage.delete().queue(ignored -> {}, ignored -> {});
+            }
+        });
+    }
+
+    public static void timeoutUser(Member member, @Nullable Member moderator, Guild guild, Duration duration, boolean silent, String reason, BiConsumer<MessageEmbed, Boolean> callback) {
+        moderator = moderator == null ? guild.getSelfMember() : moderator;
+        if (!prepareModeration(member, moderator, guild, callback)) return;
+
+        User user = member.getUser();
+        executePunishment(member, moderator, guild, user, "timeout", "Timed out user", "You have been timed out from " + guild.getName() + "!", reason, silent,
+                guild.timeoutFor(user, duration).reason(reason), null, callback);
+    }
+
+    public static void kickUser(Member member, @Nullable Member moderator, Guild guild, boolean silent, String reason, @Nullable Channel originChannel, BiConsumer<MessageEmbed, Boolean> callback) {
+        moderator = moderator == null ? guild.getSelfMember() : moderator;
+        if (!prepareModeration(member, moderator, guild, callback)) return;
+
+        User user = member.getUser();
+        executePunishment(member, moderator, guild, user, "kick", "Kicked user", "You have been kicked from " + guild.getName() + "!", reason, silent,
+                guild.kick(user).reason(reason), originChannel, callback);
+    }
+
+    public static void banUser(Member member, @Nullable Member moderator, Guild guild, int days, boolean silent, String reason, @Nullable Channel originChannel, BiConsumer<MessageEmbed, Boolean> callback) {
+        moderator = moderator == null ? guild.getSelfMember() : moderator;
+        if (!prepareModeration(member, moderator, guild, callback)) return;
+        if (days < 0 || days > 7) {
+            callback.accept(errorEmbed("Invalid message history window", "The number of days to delete must be between 0 and 7."), false);
+            return;
+        }
+
+        User user = member.getUser();
+        executePunishment(member, moderator, guild, user, "ban", "Banned user", "You have been banned from " + guild.getName() + "!", reason, silent,
+                guild.ban(user, days, TimeUnit.DAYS).reason(reason), originChannel, callback);
+    }
+
+    private static boolean prepareModeration(@Nullable Member member, @Nullable Member moderator, Guild guild, BiConsumer<MessageEmbed, Boolean> callback) {
+        if (member == null) {
+            callback.accept(errorEmbed("Invalid user", "The user ID specified doesn't link with any valid user in this server."), false);
+            return false;
+        }
+        if (!BotHelpers.canTarget(moderator, member)) {
+            callback.accept(errorEmbed("Higher role", "Either the bot or you cannot target that user."), false);
+            return false;
+        }
+        return true;
+    }
+
+    private static void executePunishment(Member member, Member moderator, Guild guild, User user, String action, String successTitle, String notificationTitle, String reason, boolean silent, RestAction<Void> request, @Nullable Channel originChannel, BiConsumer<MessageEmbed, Boolean> callback) {
+        request.queue(ignored -> {
+            int id = MCCBot.storageManager.addLog(moderator, action, user, reason);
+            MessageEmbed result = new EmbedBuilder()
+                    .setTitle(successTitle)
+                    .addField("User", user.getAsMention(), false)
+                    .addField("Staff member", moderator.getAsMention(), false)
+                    .addField("Reason", reason, false)
+                    .setFooter("ID: " + id)
+                    .setTimestamp(Instant.now())
+                    .setColor(BotColors.SUCCESS.getColor())
+                    .build();
+
+            ServerSettings.getLogChannel(guild).sendMessageEmbeds(result).queue();
+            TextChannel moderationChannel = ServerSettings.getModChannel(guild);
+            if ((originChannel == null || !ServerSettings.isModChannel(guild, originChannel)) && moderationChannel != null) {
+                moderationChannel.sendMessageEmbeds(result).queue();
+            }
+
+            callback.accept(result, true);
+            if (!silent) {
+                EmbedBuilder notification = new EmbedBuilder()
+                        .setTitle(notificationTitle)
+                        .addField("Reason", reason, false)
+                        .setTimestamp(Instant.now())
+                        .setColor(BotColors.FAILURE.getColor());
+                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
+                if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
+                    notification.addField("Additional Info", punishmentMessage, false);
+                }
+                user.openPrivateChannel().queue(channel -> channel.sendMessageEmbeds(notification.build()).queue(ignoredMessage -> {}, ignoredFailure -> {}), ignored -> {});
+            }
+        }, ignored -> callback.accept(errorEmbed("Moderation action failed", "I couldn't " + action + " " + user.getAsMention() + "."), false));
+    }
+
+    private static MessageEmbed errorEmbed(String title, String description) {
+        return new EmbedBuilder()
+                .setTitle(title)
+                .setDescription(description)
                 .setTimestamp(Instant.now())
                 .setColor(BotColors.FAILURE.getColor())
                 .build();
-
-        ServerSettings.getModChannel(guild).sendMessage(
-                new MessageCreateBuilder()
-                        .setContent(user.getAsMention())
-                        .setEmbeds(modChatEmbed)
-                        .build()
-        ).addComponents(row).queue(message -> {
-            Role moderationRole = ServerSettings.getModRole(guild);
-            if (moderationRole != null) {
-                message.reply(moderationRole.getAsMention())
-                        .setAllowedMentions(null) // Allows the ping, null means all confusingly
-                        .queue();
-            }
-
-            if (referenceMessage != null) {
-                referenceMessage.forwardTo(message.getChannel()).queue(msg -> {
-                    if (deleteReferenceMessage) {
-                        referenceMessage.delete().queue(v -> {}, throwable -> {});
-                    }
-                }, throwable -> {
-                    if (deleteReferenceMessage) {
-                        referenceMessage.delete().queue(v -> {}, throwable2 -> {});
-                    }
-                });
-            }
-        });
-
-        // Now log it!
-        int id = MCCBot.storageManager.addLog(staffMember, "quarantine", user, reason);
-
-        MessageEmbed quarantinedEmbed = new EmbedBuilder()
-                .setTitle("Quarantined user")
-                .addField("User", user.getAsMention(), false)
-                .addField("Staff member", staffMember.getAsMention(), false)
-                .addField("Reason", reason, false)
-                .setFooter("ID: " + id)
-                .setTimestamp(Instant.now())
-                .setColor(BotColors.WARNING.getColor())
-                .build();
-
-        ServerSettings.getLogChannel(guild).sendMessageEmbeds(quarantinedEmbed).queue();
-    }
-
-    public static MessageEmbed timeoutUser(Member member, Member moderator, Guild guild, Duration duration, boolean silent, String reason) {
-        if (moderator == null) moderator = guild.getSelfMember();
-
-        // Check the user exists
-        if (member == null) {
-            return new EmbedBuilder()
-                    .setTitle("Invalid user")
-                    .setDescription("The user ID specified doesn't link with any valid user in this server.")
-                    .setColor(BotColors.FAILURE.getColor())
-                    .build();
-        }
-
-        // Check we can target the user
-        if (!BotHelpers.canTarget(moderator, member)) {
-            return new EmbedBuilder()
-                    .setTitle("Higher role")
-                    .setDescription("Either the bot or you cannot target that user.")
-                    .setColor(BotColors.FAILURE.getColor())
-                    .build();
-        }
-
-        User user = member.getUser();
-
-        // Let the user know they're timed out if we are not being silent
-        if (!silent) {
-            user.openPrivateChannel().queue((channel) -> {
-                EmbedBuilder embedBuilder = new EmbedBuilder()
-                        .setTitle("You have been timed out from " + guild.getName() + "!")
-                        .addField("Reason", reason, false)
-                        .setTimestamp(Instant.now())
-                        .setColor(BotColors.FAILURE.getColor());
-
-                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
-                if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
-                    embedBuilder.addField("Additional Info", punishmentMessage, false);
-                }
-
-                channel.sendMessageEmbeds(embedBuilder.build()).queue(message -> {
-                    // Timeout user
-                    guild.timeoutFor(user, duration).reason(reason).queue();
-                }, throwable -> {
-                    // Timeout user
-                    guild.timeoutFor(user, duration).reason(reason).queue();
-                });
-            }, throwable -> {
-                // Timeout user
-                guild.timeoutFor(user, duration).reason(reason).queue();
-            });
-        } else {
-            // Timeout user
-            guild.timeoutFor(user, duration).reason(reason).queue();
-        }
-
-        // Log the change
-        int id = MCCBot.storageManager.addLog(moderator, "timeout", user, reason);
-
-        MessageEmbed timedOutEmbed = new EmbedBuilder()
-                .setTitle("Timed out user")
-                .addField("User", user.getAsMention(), false)
-                .addField("Staff member", moderator.getAsMention(), false)
-                .addField("Reason", reason, false)
-                .setFooter("ID: " + id)
-                .setTimestamp(Instant.now())
-                .setColor(BotColors.SUCCESS.getColor())
-                .build();
-
-        // Send the embed as a reply and to the log
-        ServerSettings.getLogChannel(guild).sendMessageEmbeds(timedOutEmbed).queue();
-        return timedOutEmbed;
-    }
-
-    public static MessageEmbed kickUser(Member member, Member moderator, Guild guild, boolean silent, String reason, @Nullable Channel originChannel) {
-        if (moderator == null) moderator = guild.getSelfMember();
-
-        // Check the user exists
-        if (member == null) {
-            return new EmbedBuilder()
-                    .setTitle("Invalid user")
-                    .setDescription("The user ID specified doesn't link with any valid user in this server.")
-                    .setColor(BotColors.FAILURE.getColor())
-                    .build();
-        }
-
-        // Check we can target the user
-        if (!BotHelpers.canTarget(moderator, member)) {
-            return new EmbedBuilder()
-                    .setTitle("Higher role")
-                    .setDescription("Either the bot or you cannot target that user.")
-                    .setColor(BotColors.FAILURE.getColor())
-                    .build();
-        }
-
-        User user = member.getUser();
-
-        // Let the user know they're kicked if we are not being silent
-        if (!silent) {
-            user.openPrivateChannel().queue((channel) -> {
-                EmbedBuilder embedBuilder = new EmbedBuilder()
-                        .setTitle("You have been kicked from " + guild.getName() + "!")
-                        .addField("Reason", reason, false)
-                        .setTimestamp(Instant.now())
-                        .setColor(BotColors.FAILURE.getColor());
-
-                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
-                if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
-                    embedBuilder.addField("Additional Info", punishmentMessage, false);
-                }
-
-                channel.sendMessageEmbeds(embedBuilder.build()).queue(message -> {
-                    // Kick user
-                    guild.kick(user).reason(reason).queue();
-                }, throwable -> {
-                    // Kick user
-                    guild.kick(user).reason(reason).queue();
-                });
-            }, throwable -> {
-                // Kick user
-                guild.kick(user).reason(reason).queue();
-            });
-        } else {
-            // Kick user
-            guild.kick(user).reason(reason).queue();
-        }
-
-        // Log the change
-        int id = MCCBot.storageManager.addLog(moderator, "kick", user, reason);
-
-        MessageEmbed kickedEmbed = new EmbedBuilder()
-                .setTitle("Kicked user")
-                .addField("User", user.getAsMention(), false)
-                .addField("Staff member", moderator.getAsMention(), false)
-                .addField("Reason", reason, false)
-                .setFooter("ID: " + id)
-                .setTimestamp(Instant.now())
-                .setColor(BotColors.SUCCESS.getColor())
-                .build();
-
-        // Send the embed as a reply and to the log
-        ServerSettings.getLogChannel(guild).sendMessageEmbeds(kickedEmbed).queue();
-        if (originChannel == null || !ServerSettings.isModChannel(guild, originChannel)) {
-            ServerSettings.getModChannel(guild).sendMessageEmbeds(kickedEmbed).queue();
-        }
-        return kickedEmbed;
-    }
-
-    public static MessageEmbed banUser(Member member, Member moderator, Guild guild, int days, boolean silent, String reason, @Nullable Channel originChannel) {
-        if (moderator == null) moderator = guild.getSelfMember();
-
-        // Check the user exists
-        if (member == null) {
-            return new EmbedBuilder()
-                    .setTitle("Invalid user")
-                    .setDescription("The user ID specified doesn't link with any valid user in this server.")
-                    .setColor(BotColors.FAILURE.getColor())
-                    .build();
-        }
-
-        // Check we can target the user
-        if (!BotHelpers.canTarget(moderator, member)) {
-            return new EmbedBuilder()
-                    .setTitle("Higher role")
-                    .setDescription("Either the bot or you cannot target that user.")
-                    .setColor(BotColors.FAILURE.getColor())
-                    .build();
-        }
-
-        User user = member.getUser();
-
-        // Let the user know they're banned if we are not being silent
-        if (!silent) {
-            user.openPrivateChannel().queue((channel) -> {
-                EmbedBuilder embedBuilder = new EmbedBuilder()
-                        .setTitle("You have been banned from " + guild.getName() + "!")
-                        .addField("Reason", reason, false)
-                        .setTimestamp(Instant.now())
-                        .setColor(BotColors.FAILURE.getColor());
-
-                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
-                if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
-                    embedBuilder.addField("Additional Info", punishmentMessage, false);
-                }
-
-                channel.sendMessageEmbeds(embedBuilder.build()).queue(message -> {
-                    // Ban user
-                    guild.ban(user, days, TimeUnit.DAYS).reason(reason).queue();
-                }, throwable -> {
-                    // Ban user
-                    guild.ban(user, days, TimeUnit.DAYS).reason(reason).queue();
-                });
-            }, throwable -> {
-                // Ban user
-                guild.ban(user, days, TimeUnit.DAYS).reason(reason).queue();
-            });
-        } else {
-            // Ban user
-            guild.ban(user, days, TimeUnit.DAYS).reason(reason).queue();
-        }
-
-        // Log the change
-        int id = MCCBot.storageManager.addLog(moderator, "ban", user, reason);
-
-        MessageEmbed bannedEmbed = new EmbedBuilder()
-                .setTitle("Banned user")
-                .addField("User", user.getAsMention(), false)
-                .addField("Staff member", moderator.getAsMention(), false)
-                .addField("Reason", reason, false)
-                .setFooter("ID: " + id)
-                .setTimestamp(Instant.now())
-                .setColor(BotColors.SUCCESS.getColor())
-                .build();
-
-        // Send the embed as a reply and to the log
-        ServerSettings.getLogChannel(guild).sendMessageEmbeds(bannedEmbed).queue();
-        if (originChannel == null || !ServerSettings.isModChannel(guild, originChannel)) {
-            ServerSettings.getModChannel(guild).sendMessageEmbeds(bannedEmbed).queue();
-        }
-        return bannedEmbed;
     }
 }

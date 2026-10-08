@@ -29,6 +29,7 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -54,7 +55,7 @@ public class BanCommand extends SlashCommand {
 
         this.options = Arrays.asList(
                 new OptionData(OptionType.USER, "member", "The member to ban", true),
-                new OptionData(OptionType.INTEGER, "days", "How many days worth of messages should we purge"),
+                new OptionData(OptionType.INTEGER, "days", "How many days worth of messages should we purge").setRequiredRange(0, 7),
                 new OptionData(OptionType.BOOLEAN, "silent", "Toggle notifying the user upon banning"),
                 new OptionData(OptionType.STRING, "reason", "Specify a reason for banning")
         );
@@ -68,10 +69,15 @@ public class BanCommand extends SlashCommand {
 
         // Fetch ban args
         int days = event.getOption("days", 0, OptionMapping::getAsInt);
+        if (days < 0 || days > 7) {
+            event.replyEmbeds(invalidDaysEmbed()).queue();
+            return;
+        }
         boolean silent = event.optBoolean("silent", false);
         String reason = event.optString("reason", "*None*");
 
-        event.replyEmbeds(ModerationHelper.banUser(member, moderator, event.getGuild(), days, silent, reason, event.getChannel())).queue();
+        event.deferReply().queue(hook -> ModerationHelper.banUser(member, moderator, event.getGuild(), days, silent, reason, event.getChannel(),
+                (embed, succeeded) -> hook.sendMessageEmbeds(embed).queue()));
     }
 
     @Override
@@ -122,6 +128,11 @@ public class BanCommand extends SlashCommand {
             args.remove(0);
         }
 
+        if (delDays < 0 || delDays > 7) {
+            event.getMessage().replyEmbeds(invalidDaysEmbed()).queue();
+            return;
+        }
+
         // Get the reason or use None
         String reasonParts = String.join(" ", args);
         String reason;
@@ -131,6 +142,15 @@ public class BanCommand extends SlashCommand {
             reason = reasonParts;
         }
 
-        event.getMessage().replyEmbeds(ModerationHelper.banUser(member, moderator, event.getGuild(), delDays, silent, reason, event.getChannel())).queue();
+        ModerationHelper.banUser(member, moderator, event.getGuild(), delDays, silent, reason, event.getChannel(),
+                (embed, succeeded) -> event.getMessage().replyEmbeds(embed).queue());
+    }
+
+    private MessageEmbed invalidDaysEmbed() {
+        return new EmbedBuilder()
+                .setTitle("Invalid message history window")
+                .setDescription("The number of days to delete must be between 0 and 7.")
+                .setColor(BotColors.FAILURE.getColor())
+                .build();
     }
 }

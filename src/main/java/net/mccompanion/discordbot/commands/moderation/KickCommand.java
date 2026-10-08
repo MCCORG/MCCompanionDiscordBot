@@ -77,7 +77,8 @@ public class KickCommand extends SlashCommand {
         }
 
 
-        event.replyEmbeds(ModerationHelper.kickUser(member, moderator, event.getGuild(), silent, reason, event.getChannel())).queue();
+        event.deferReply().queue(hook -> ModerationHelper.kickUser(member, moderator, event.getGuild(), silent, reason, event.getChannel(),
+                (embed, succeeded) -> hook.sendMessageEmbeds(embed).queue()));
     }
 
     @Override
@@ -123,6 +124,7 @@ public class KickCommand extends SlashCommand {
             reason = reasonParts;
         }
 
-        event.getMessage().replyEmbeds(ModerationHelper.kickUser(member, moderator, event.getGuild(), silent, reason, event.getChannel())).queue();
+        ModerationHelper.kickUser(member, moderator, event.getGuild(), silent, reason, event.getChannel(),
+                (embed, succeeded) -> event.getMessage().replyEmbeds(embed).queue());
     }
 }
