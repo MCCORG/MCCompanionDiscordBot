@@ -35,7 +35,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
-import net.mccompanion.discordbot.GeyserBot;
+import net.mccompanion.discordbot.MCCBot;
 import net.mccompanion.discordbot.util.BotColors;
 import net.mccompanion.discordbot.util.ModerationHelper;
 import org.jetbrains.annotations.NotNull;

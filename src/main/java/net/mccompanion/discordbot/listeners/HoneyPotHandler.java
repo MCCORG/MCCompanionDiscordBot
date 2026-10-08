@@ -31,7 +31,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.mccompanion.discordbot.GeyserBot;
+import net.mccompanion.discordbot.MCCBot;
 import net.mccompanion.discordbot.util.ModerationHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,7 +41,7 @@ public class HoneyPotHandler extends ListenerAdapter {
     @Override
     public void onReady(@NotNull ReadyEvent event) {
         for (Guild guild : event.getJDA().getGuilds()) {
-            String honeyPotChannelId = GeyserBot.storageManager.getServerPreference(guild.getIdLong(), "honey-pot-channel");
+            String honeyPotChannelId = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "honey-pot-channel");
             if (honeyPotChannelId == null) continue;
 
             TextChannel channel = guild.getTextChannelById(honeyPotChannelId);
@@ -69,7 +69,7 @@ public class HoneyPotHandler extends ListenerAdapter {
         if (event.getAuthor().isBot()) return;
         if (!event.isFromGuild()) return;
 
-        String honeyPotChannelId = GeyserBot.storageManager.getServerPreference(event.getGuild().getIdLong(), "honey-pot-channel");
+        String honeyPotChannelId = MCCBot.storageManager.getServerPreference(event.getGuild().getIdLong(), "honey-pot-channel");
         if (honeyPotChannelId == null) return;
 
         if (event.getChannel().getId().equals(honeyPotChannelId)) {

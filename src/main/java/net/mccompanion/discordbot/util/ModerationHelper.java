@@ -33,7 +33,7 @@ import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.mccompanion.discordbot.GeyserBot;
+import net.mccompanion.discordbot.MCCBot;
 import net.mccompanion.discordbot.storage.ServerSettings;
 
 import javax.annotation.Nullable;
@@ -113,7 +113,7 @@ public class ModerationHelper {
             });
 
             // Now log it!
-            int id = GeyserBot.storageManager.addLog(staffMember, "quarantine", user, reason);
+            int id = MCCBot.storageManager.addLog(staffMember, "quarantine", user, reason);
 
             MessageEmbed quarantinedEmbed = new EmbedBuilder()
                     .setTitle("Quarantined user (Unactioned!)")
@@ -182,7 +182,7 @@ public class ModerationHelper {
         });
 
         // Now log it!
-        int id = GeyserBot.storageManager.addLog(staffMember, "quarantine", user, reason);
+        int id = MCCBot.storageManager.addLog(staffMember, "quarantine", user, reason);
 
         MessageEmbed quarantinedEmbed = new EmbedBuilder()
                 .setTitle("Quarantined user")
@@ -229,7 +229,7 @@ public class ModerationHelper {
                         .setTimestamp(Instant.now())
                         .setColor(BotColors.FAILURE.getColor());
 
-                String punishmentMessage = GeyserBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
+                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
                 if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
                     embedBuilder.addField("Additional Info", punishmentMessage, false);
                 }
@@ -251,7 +251,7 @@ public class ModerationHelper {
         }
 
         // Log the change
-        int id = GeyserBot.storageManager.addLog(moderator, "timeout", user, reason);
+        int id = MCCBot.storageManager.addLog(moderator, "timeout", user, reason);
 
         MessageEmbed timedOutEmbed = new EmbedBuilder()
                 .setTitle("Timed out user")
@@ -300,7 +300,7 @@ public class ModerationHelper {
                         .setTimestamp(Instant.now())
                         .setColor(BotColors.FAILURE.getColor());
 
-                String punishmentMessage = GeyserBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
+                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
                 if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
                     embedBuilder.addField("Additional Info", punishmentMessage, false);
                 }
@@ -322,7 +322,7 @@ public class ModerationHelper {
         }
 
         // Log the change
-        int id = GeyserBot.storageManager.addLog(moderator, "kick", user, reason);
+        int id = MCCBot.storageManager.addLog(moderator, "kick", user, reason);
 
         MessageEmbed kickedEmbed = new EmbedBuilder()
                 .setTitle("Kicked user")
@@ -374,7 +374,7 @@ public class ModerationHelper {
                         .setTimestamp(Instant.now())
                         .setColor(BotColors.FAILURE.getColor());
 
-                String punishmentMessage = GeyserBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
+                String punishmentMessage = MCCBot.storageManager.getServerPreference(guild.getIdLong(), "punishment-message");
                 if (punishmentMessage != null && !punishmentMessage.isEmpty()) {
                     embedBuilder.addField("Additional Info", punishmentMessage, false);
                 }
@@ -396,7 +396,7 @@ public class ModerationHelper {
         }
 
         // Log the change
-        int id = GeyserBot.storageManager.addLog(moderator, "ban", user, reason);
+        int id = MCCBot.storageManager.addLog(moderator, "ban", user, reason);
 
         MessageEmbed bannedEmbed = new EmbedBuilder()
                 .setTitle("Banned user")
