@@ -50,6 +50,7 @@ public class BanCommand extends SlashCommand {
         this.help = "Ban a user";
 
         this.userPermissions = new Permission[] { Permission.BAN_MEMBERS };
+        this.botPermissions = new Permission[] { Permission.BAN_MEMBERS };
 
         this.options = Arrays.asList(
                 new OptionData(OptionType.USER, "member", "The member to ban", true),
