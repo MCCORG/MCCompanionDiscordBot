@@ -35,6 +35,7 @@ import net.mccompanion.discordbot.util.PropertiesManager;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -42,7 +43,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SqliteStorageManager extends MySQLStorageManager {
+public class SqliteStorageManager extends AbstractStorageManager {
+    protected Connection connection;
 
     @Override
     public void setupStorage() throws Exception {
