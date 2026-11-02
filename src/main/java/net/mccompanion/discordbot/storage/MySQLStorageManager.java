@@ -53,7 +53,6 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import org.geysermc.discordbot.util.PropertiesManager;
 
 public class MySQLStorageManager extends AbstractStorageManager {
 
